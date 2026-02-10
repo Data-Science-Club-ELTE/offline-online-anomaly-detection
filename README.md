@@ -1,45 +1,47 @@
-# Data Science Club Project Template
-
-> [!IMPORTANT]
-> We ask **Project Leaders** to replace these blocks marked as `Important` with the actual project details.
+# Offline & Online Anomaly Detection in Credit Card Data
 
 ## Brief project description
 
-> [!IMPORTANT]
-> 1-3 sentences about the project. This shall be a high-level overview with little to no technical details.
+Detect fraudulent transactions in *Credit Card* data, in both offline and online setting. The objective is to get hands-on experience in the anomaly detection pipeline when the data is given as a large batch (offline) and when it arrives incrementally (online).
 
 ## Team
 
 > [!IMPORTANT]
 > Please fill out the following table with the name and expected responsibilities of each team member.
 
-|               | Expected responsibilities |
-| :------------ | :------------------------ |
-| Team member 1 | Team Leader, etc.         |
-| Team member 2 | Data Modeling, etc.       |
-| $\vdots$      | $\vdots$                  |
-| Team member N | Data Visualization, etc.  |
+|                   | Expected responsibilities   |
+| :---------------- | :-------------------------- |
+| Tynybekova, Amina | Co-Leader: Offline Learning |
+| Balogh, Mate      | Co-Leader: Online Learning  |
+| $\vdots$          | $\vdots$                    |
+| Team member N     | TBA                         |
 
 ## The *Problem* behind the project
 
-> [!IMPORTANT]
-> If you have already outlined the problem that your project is trying to create a solution for, then please introduce it briefly. Otherwise, replace it later.
+Fraudulent transactions related to credit cards are either result in financial losses for companies or unjust charges to customers. Detecting these transactions is essential to minimize those outcomes.
 
 ## Challenges
 
-> [!IMPORTANT]
-> Here you may list challenges that make the project idea / problem less straightforward from a *Data Science* point of view.
+Anomaly detection problems often require un- or semi-supervised solutions due to the limited number of anomalous samples and to the evolving nature of fraudulent activities.
+
+In contrast with static data, stream data is unbounded, has high velocity, and arrives sequentially rather than just sitting in one pile ready to be analyzed. When anomaly detection is performed in a streaming scenario, an online model might not be as accurate as an offline model, but is able to adapt to changing patterns and to focus on recent history instead of matching against obsolete patterns. Besides, stream mining algorithms often look at each observation a single time and "discard" the data, at least it is assumed it cannot be retrieved only at a later time in deep offline analysis.
+
+It is important to mention that although recalling anomalies is desired, too much false positives can cause customer inconvenience.
 
 ## Expectations
 
-> [!IMPORTANT]
-> If you have an expectation about the outcomes of your project, then please outline it briefly. Otherwise, leave it unchanged.
+We plan to build an offline and an online version of the anomaly detection pipeline where we flag as much fraudulent transactions that come with bearable false positives.
+
+We expect the online version may perform slightly worse than its offline counterpart.
 
 ## Tools & Technologies
 
-> [!IMPORTANT]
-> Please list the tools that you expect to work with in the project. (e.g.: `Python`, `R`, `NumPy`, `Pandas`, `Matplotlib`, etc.)
+`Python`, `Scikit-learn`, `RiverML`, `Pandas`, `NumPy`, `Matplotlib`, `Streamlit`
 
+## How to run the Project
+
+> [!WARNING]
+> This section is reserved for guidance on how to run the project components. This becomes relevant after code has been pushed to the repository, and is expected to be maintained according to the evolving state of the project.
 
 ## Results
 
