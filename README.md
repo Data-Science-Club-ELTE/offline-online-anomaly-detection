@@ -18,21 +18,19 @@ Detect fraudulent transactions in *Credit Card* data, in both offline and online
 
 ## The *Problem* behind the project
 
-Fraudulent transactions related to credit cards are either result in financial losses for companies or unjust charges to customers. Detecting these transactions is essential to minimize those outcomes.
+Fraudulent transactions related to credit cards either result in financial losses for companies or unjust charges to customers. Detecting these transactions is essential to minimize those outcomes.
 
 ## Challenges
 
-Anomaly detection problems often require un- or semi-supervised solutions due to the limited number of anomalous samples and to the evolving nature of fraudulent activities.
+Anomaly detection problems often require un- or semi-supervised solutions due to the limited number of anomalous samples in the training set and to the evolving nature of fraudulent activities.
 
-In contrast with static data, stream data is unbounded, has high velocity, and arrives sequentially rather than just sitting in one pile ready to be analyzed. When anomaly detection is performed in a streaming scenario, an online model might not be as accurate as an offline model, but is able to adapt to changing patterns and to focus on recent history instead of matching against obsolete patterns. Besides, stream mining algorithms often look at each observation a single time and "discard" the data, at least it is assumed it cannot be retrieved only at a later time in deep offline analysis.
+In contrast with static data, stream data is unbounded, has high velocity, and arrives sequentially rather than just sitting in one pile ready to be analyzed. When anomaly detection is performed in a streaming scenario, an online model might not be as accurate as an offline model, but is able to adapt to changing patterns and to focus on recent history instead of matching against obsolete patterns. Besides, stream mining algorithms often look at each observation a single time and "discard" the data, at least it is assumed it can only be retrieved at a later time for deep offline analysis.
 
 It is important to mention that although recalling anomalies is desired, too much false positives can cause customer inconvenience.
 
 ## Expectations
 
-We plan to build an offline and an online version of the anomaly detection pipeline where we flag as much fraudulent transactions that come with bearable false positives.
-
-We expect the online version may perform slightly worse than its offline counterpart.
+We plan to build an offline and an online version of the anomaly detection pipeline where we flag as much fraudulent transactions as possible that come with bearable amount of false positives. We expect that the comparison of the same model built in [Scikit-learn](https://scikit-learn.org/stable/index.html) and [River ML](https://riverml.xyz/latest/), respectively, will result in useful insights we, Data Scientists, can leverage in future (anomaly detection) works.
 
 ## Tools & Technologies
 
@@ -47,4 +45,3 @@ We expect the online version may perform slightly worse than its offline counter
 
 > [!CAUTION]
 > This section is reserved for discussing the project results at the **end of the semester**.
-
