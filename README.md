@@ -16,6 +16,7 @@ Detect fraudulent transactions in *Credit Card* data, in both offline and online
 | Toth, Gabor                    | Modeling (ML)       |                     |
 | Sufyan, Muhammad               | Modeling (ML)       |                     |
 | Cupi Olivares, Jair Alessandro | Modeling (ML)       |
+| Majidova, Nazrin               | Modeling (ML)       |                     |
 |                                |                     |                     |
 |                                | **Online ML part**  |                     |
 | **Balogh, Mate**               |                     | Co-Lead             |
@@ -23,7 +24,6 @@ Detect fraudulent transactions in *Credit Card* data, in both offline and online
 | Nayan, Saidul Islam            | Research            | Research Lead       |
 | Okafor, Christian Arinze       | Modeling (ML)       |                     |
 | Ibayev, Rafael                 | Modeling (ML)       |                     |
-| Majidova, Nazrin               | Modeling (ML)       |                     |
 
 ## The *Problem* behind the project
 
