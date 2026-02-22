@@ -6,7 +6,7 @@ LOGO1_PATH = ASSETS_DIR / "dscelte_logo.jpeg"
 LOGO2_PATH = ASSETS_DIR / "ophelia_02.png"
 
 TITLE = "## Offline & Online Anomaly Detection"
-CAPTION = "Credit card fraud detection • An *ELTE Data Science Club* ⨉ *Ophelia R&D* project • [GitHub repository](https://github.com/Data-Science-Club-ELTE/offline-online-anomaly-detection)"
+CAPTION = "Credit Card Fraud Detection • An *[ELTE Data Science Club](https://www.linkedin.com/company/dscelte)* ⨉ *[Ophelia R&D](https://www.linkedin.com/company/ophelia-rnd)* project • [GitHub repository](https://github.com/Data-Science-Club-ELTE/offline-online-anomaly-detection)"
 
 def render_home_header() -> None:
     if LOGO1_PATH.exists() and LOGO2_PATH.exists():
@@ -21,7 +21,3 @@ def render_home_header() -> None:
     else:
         st.markdown(TITLE)
         st.caption(CAPTION)
-
-def render_brand_footer() -> None:
-    st.divider()
-    st.caption("Copyright &copy; 2026 ELTE Data Science Club, Ophelia R&D")
