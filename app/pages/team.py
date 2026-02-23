@@ -4,27 +4,30 @@ from utils import team_member
 
 st.title(":material/group: Team")
 
-team_member("Amina Tynybekova", "Project Co-Lead", color="violet")
-team_member("Matthew Balogh", "Project Co-Lead", color="violet")
+TRADITIONAL_ML_TEAM = {"role": "Traditional ML Team", "color": "orange"}
+STREAM_ML_TEAM = {"role": "Stream ML Team", "color": "blue"}
+ML_MODELING = {"role": "Data Preparation & Modeling", "color": "yellow"}
+
+st.subheader("Project Leaders")
+team_member("Amina Tynybekova", [TRADITIONAL_ML_TEAM])
+team_member("Matthew Balogh", [STREAM_ML_TEAM])
 
 st.subheader("Research Team")
-team_member("Matthew Balogh", "Research Circle Lead", color="gray")
-team_member("Karina Osipova", "Research Lead in Offline Learning", color="primary")
-team_member("Saidul Islam Nayan", "Research Lead in Online Learning", color="primary")
+team_member("Matthew Balogh", [{"role": "Research Circle Lead", "color": "gray"}])
+team_member("Karina Osipova", [{"role": "Research Lead", "color": "primary"}, TRADITIONAL_ML_TEAM])
+team_member("Saidul Islam Nayan", [{"role": "Research Lead", "color": "primary"}, STREAM_ML_TEAM])
 
-st.subheader("Offline ML Development Team")
-team_member("Amina Tynybekova", "Lead", color="gray")
-team_member("Aibike Builasheva", "Lead Data Scientist", color="primary")
-team_member("Gabor Toth", "Data Preparation & Modeling", color="violet")
-team_member("Muhammad Sufyan", "Data Preparation & Modeling", color="violet")
-team_member("Jair Alessandro Cupi Olivares", "Data Preparation & Modeling", color="violet")
-team_member("Nazrin Majidova", "Data Preparation & Modeling", color="violet")
+st.subheader("Traditional (Offline) ML Development Team")
+team_member("Aibike Builasheva", [{"role": "Lead Data Scientist", "color": "primary"}, TRADITIONAL_ML_TEAM])
+team_member("Gabor Toth", [ML_MODELING, TRADITIONAL_ML_TEAM])
+team_member("Muhammad Sufyan", [ML_MODELING, TRADITIONAL_ML_TEAM])
+team_member("Jair Alessandro Cupi Olivares", [ML_MODELING, TRADITIONAL_ML_TEAM])
+team_member("Nazrin Majidova", [ML_MODELING, TRADITIONAL_ML_TEAM])
 
-st.subheader("Online ML Development Team")
-team_member("Matthew Balogh", "Lead", color="gray")
-team_member("Nursultan Tuleev", "Lead Data Scientist", color="primary")
-team_member("Christian Arinze Okafor", "Data Preparation & Modeling", color="violet")
-team_member("Rafael Ibayev", "Data Preparation & Modeling", color="violet")
+st.subheader("Stream (Online) ML Development Team")
+team_member("Nursultan Tuleev", [{"role": "Lead Data Scientist", "color": "primary"}, STREAM_ML_TEAM])
+team_member("Christian Arinze Okafor", [ML_MODELING, STREAM_ML_TEAM])
+team_member("Rafael Ibayev", [ML_MODELING, STREAM_ML_TEAM])
 
 st.subheader("Visualization Team")
-team_member("Diana Grigoryan*", "Visualization Lead", color="primary")
+st.caption("To be determined...")
