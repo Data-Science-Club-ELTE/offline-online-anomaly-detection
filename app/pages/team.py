@@ -29,5 +29,9 @@ team_member("Nursultan Tuleev", [{"role": "Lead Data Scientist", "color": "prima
 team_member("Christian Arinze Okafor", [ML_MODELING, STREAM_ML_TEAM])
 team_member("Rafael Ibayev", [ML_MODELING, STREAM_ML_TEAM])
 
-st.subheader("Visualization Team")
-st.caption("To be determined...")
+st.subheader("Visualization & Insights Team")
+team_member("Diana Grigoryan", [{"role": "Insights Lead", "color": "primary"}, TRADITIONAL_ML_TEAM, STREAM_ML_TEAM])
+
+st.subheader("Product Team")
+team_member("Matthew Balogh", [{"role": "Prototype Responsible", "color": "red"}, TRADITIONAL_ML_TEAM, STREAM_ML_TEAM])
+team_member("Gabor Toth", [{"role": "Hybrid ML Pipeline Designer", "color": "violet"}, {"role": "Banking Domain Knowledge", "color": "green"}, TRADITIONAL_ML_TEAM, STREAM_ML_TEAM])
