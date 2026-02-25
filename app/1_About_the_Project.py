@@ -2,6 +2,12 @@ import streamlit as st
 
 from branding import render_home_header
 
+st.set_page_config(
+    page_title="About the Project",
+    page_icon=":material/detector:",
+    layout="wide",
+)
+
 render_home_header()
 
 st.subheader("About the Project")

@@ -2,6 +2,12 @@ import streamlit as st
 
 from utils import team_member
 
+st.set_page_config(
+    page_title="Team",
+    page_icon=":material/detector:",
+    layout="wide",
+)
+
 st.title(":material/group: Team")
 
 TRADITIONAL_ML_TEAM = {"role": "Traditional ML Team", "color": "orange"}
