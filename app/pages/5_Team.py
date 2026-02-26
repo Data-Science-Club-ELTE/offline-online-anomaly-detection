@@ -1,12 +1,18 @@
 import streamlit as st
 
+from pathlib import Path
 from utils import team_member
+
+ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
+IMG_PATH = ASSETS_DIR / "background.png"
 
 st.set_page_config(
     page_title="Team",
     page_icon=":material/detector:",
     layout="wide",
 )
+
+st.image(IMG_PATH)
 
 st.title(":material/group: Team")
 
