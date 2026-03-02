@@ -6,24 +6,25 @@ Detect fraudulent transactions in *Credit Card* data, in both offline and online
 
 ## Team
 
-|                                | Contribution Area   | Specific Role       |
-| :----------------------------- | :------------------ | :------------------ |
-|                                |                     |                     |
-|                                | **Offline ML part** |                     |
-| **Tynybekova, Amina**          |                     | Co-Lead             |
-| Builasheva, Aibike             | Modeling (ML)       | Lead Data Scientist |
-| Osipova, Karina                | Research            | Research Lead       |
-| Toth, Gabor                    | Modeling (ML)       |                     |
-| Sufyan, Muhammad               | Modeling (ML)       |                     |
-| Cupi Olivares, Jair Alessandro | Modeling (ML)       |
-| Majidova, Nazrin               | Modeling (ML)       |                     |
-|                                |                     |                     |
-|                                | **Online ML part**  |                     |
-| **Balogh, Mate**               |                     | Co-Lead             |
-| Tuleev, Nursultan              | Modeling (ML)       | Lead Data Scientist |
-| Nayan, Saidul Islam            | Research            | Research Lead       |
-| Okafor, Christian Arinze       | Modeling (ML)       |                     |
-| Ibayev, Rafael                 | Modeling (ML)       |                     |
+|                                | Contribution Area       | Specific Role       |
+| :----------------------------- | :---------------------- | :------------------ |
+|                                |                         |                     |
+|                                | **Offline ML part**     |                     |
+| **Tynybekova, Amina**          |                         | Co-Lead             |
+| Builasheva, Aibike             | Modeling (ML)           | Lead Data Scientist |
+| Osipova, Karina                | Research                | Research Lead       |
+| Toth, Gabor                    | Modeling (ML)           |                     |
+| Sufyan, Muhammad               | Modeling (ML)           |                     |
+| Cupi Olivares, Jair Alessandro | Modeling (ML)           |
+| Majidova, Nazrin               | Modeling (ML)           |                     |
+|                                |                         |                     |
+|                                | **Online ML part**      |                     |
+| **Balogh, Mate**               |                         | Co-Lead             |
+| Tuleev, Nursultan              | Modeling (ML)           | Lead Data Scientist |
+| Nayan, Saidul Islam            | Research                | Research Lead       |
+| Okafor, Christian Arinze       | Modeling (ML)           |                     |
+| Ibayev, Rafael                 | Modeling (ML)           |                     |
+| Grigoryan, Diana               | Visualization, Insights |                     |
 
 ## The *Problem* behind the project
 
