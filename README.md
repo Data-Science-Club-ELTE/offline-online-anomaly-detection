@@ -96,6 +96,8 @@ Please follow this workflow to keep the project consistent and reviewable.
 
 7. Done. Your project leader will review and approve your pull request, or ask for refinements.
 
+> As for an example, visit [this](https://github.com/Data-Science-Club-ELTE/offline-online-anomaly-detection/pull/13) pull request.
+
 ## How to run the Project
 
 > [!WARNING]
