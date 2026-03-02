@@ -4,9 +4,19 @@ from pathlib import Path
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 LOGO1_PATH = ASSETS_DIR / "dscelte_logo.jpeg"
 LOGO2_PATH = ASSETS_DIR / "ophelia_02.png"
+LOGO3_PATH = ASSETS_DIR / "ophelia_01.png"
 
 TITLE = "## Offline & Online Anomaly Detection"
 CAPTION = "Credit Card Fraud Detection • An *[ELTE Data Science Club](https://www.linkedin.com/company/dscelte)* ⨉ *[Ophelia R&D](https://www.linkedin.com/company/ophelia-rnd)* project • [GitHub repository](https://github.com/Data-Science-Club-ELTE/offline-online-anomaly-detection)"
+
+def render_logo():
+    if LOGO3_PATH.exists():
+        st.logo(
+            LOGO3_PATH,
+            icon_image=LOGO3_PATH,
+            size="large"
+        )
+
 
 def render_home_header() -> None:
     if LOGO1_PATH.exists() and LOGO2_PATH.exists():

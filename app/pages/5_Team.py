@@ -1,6 +1,7 @@
 import streamlit as st
 
 from pathlib import Path
+from branding import render_logo
 from utils import team_member
 
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
@@ -11,6 +12,8 @@ st.set_page_config(
     page_icon=":material/detector:",
     layout="wide",
 )
+
+render_logo()
 
 st.image(IMG_PATH)
 

@@ -1,6 +1,7 @@
 import streamlit as st
 
-from branding import render_home_header
+from branding import render_logo, render_home_header
+
 
 st.set_page_config(
     page_title="About the Project",
@@ -8,6 +9,7 @@ st.set_page_config(
     layout="wide",
 )
 
+render_logo()
 render_home_header()
 
 st.subheader("About the Project")
