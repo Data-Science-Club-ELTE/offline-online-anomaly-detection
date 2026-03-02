@@ -51,10 +51,56 @@ We expect that the comparison of the same model built in [Scikit-learn](https://
 
 `Python`, `Scikit-learn`, `RiverML`, `Pandas`, `NumPy`, `Matplotlib`, `Streamlit`
 
+## For Collaborators
+
+Please follow this workflow to keep the project consistent and reviewable.
+
+### Branching
+
+- `main`: Stable, production-ready, protected
+- `offline-detection` and `online-detection`: Protected aggregate branches for each team
+- `task/<short-description>` – Short-lived branches created from your respective team branch
+
+> ⚠️ Direct pushes to protected branches are not allowed. Changes must be made via Pull Requests.
+
+---
+
+### Development Workflow
+
+1. Checkout the relevant aggregate branch:
+   ```bash
+   git checkout offline-detection   # or online-detection
+   ```
+
+2. Create a task branch:
+   ```bash
+   git checkout -b task/short-description
+   ```
+
+3. Commit your changes:
+   ```bash
+   git add .
+   git commit -m "Add short and clear description"
+   ```
+
+4. Push your branch:
+   ```bash
+   git push origin task/short-description
+   ```
+
+5. Open a Pull Request:
+
+   - targeting either `offline-detection` or `online-detection` branch
+   - keep PRs small and focused
+   - clearly explain *what* was done and *why*
+
+7. Done. Your project leader will review and approve your pull request, or ask for refinements.
+
 ## How to run the Project
 
 > [!WARNING]
 > This section is reserved for guidance on how to run the project components. This becomes relevant after code has been pushed to the repository, and is expected to be maintained according to the evolving state of the project.
+
 
 ## Results
 
