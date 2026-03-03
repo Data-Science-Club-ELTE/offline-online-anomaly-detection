@@ -8,3 +8,11 @@
 #
 # --------------------------------------------------------------------------------------------------------
 
+VERBOSE = True
+
+# Load dataset
+
+from river.datasets import CreditCard
+
+dataset = CreditCard()
+if VERBOSE: print("Is the dataset downloaded? ", dataset.is_downloaded, "\n")
