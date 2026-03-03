@@ -11,7 +11,7 @@ render_logo()
 
 st.title(":material/route: Project Roadmap")
 
-st.subheader("Research Team")
+st.subheader(":material/genetics: Research")
 
 ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
 ch.caption("WEEK 1 - WEEK 3", width="content")
@@ -25,7 +25,7 @@ st.write("Organize Research Materials")
 c1, c2 = st.columns([1, 1], gap="large")
 
 with c1:
-    st.subheader("Traditional (Offline) Model Development Timeline")
+    st.subheader(":material/potted_plant: Traditional (Offline) Model Development")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 1", width="content")
@@ -54,9 +54,13 @@ with c1:
     ch.caption("WEEK 6", width="content")
     st.write("Assess Results and Limitations & Prepare for Presentation")
 
+    ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
+    ch.caption("WEEK 7", width="content")
+    st.write("Present on Demo Day :balloon:")
+
 
 with c2:
-    st.subheader("Stream (Online) Model Development Timeline")
+    st.subheader(":material/earthquake: Stream (Online) Model Development")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 1", width="content")
@@ -85,3 +89,6 @@ with c2:
     ch.caption("WEEK 6", width="content")
     st.write("Assess Results and Limitations & Prepare for Presentation")
 
+    ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
+    ch.caption("WEEK 7", width="content")
+    st.write("Present on Demo Day :balloon:")
