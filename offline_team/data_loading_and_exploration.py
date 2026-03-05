@@ -35,10 +35,10 @@ def print_nazrin_summary(df: pd.DataFrame) -> None:
 
 def print_amina_exploration(df: pd.DataFrame) -> None:
     """Amina: data types summary table, statistical summary, class distribution."""
-    print("\n--- Data types and nullability ---")
+    print("\nData types and nullability")
     df.info()
 
-    print("\n--- Dtype summary (column, dtype, non_null, null_count) ---")
+    print("\nDtype summary (column, dtype, non_null, null_count) ")
     dtype_summary = pd.DataFrame({
         "column": df.columns,
         "dtype": df.dtypes.astype(str),
@@ -47,17 +47,17 @@ def print_amina_exploration(df: pd.DataFrame) -> None:
     })
     print(dtype_summary.to_string())
 
-    print("\n--- Numeric summary (count, mean, std, min, quartiles, max) ---")
+    print("\nNumeric summary (count, mean, std, min, quartiles, max)")
     print(df.describe().to_string())
 
-    print("\n--- Extended summary (all columns, custom percentiles) ---")
+    print("\nExtended summary (all columns, custom percentiles)")
     extended = df.describe(
         include="all",
         percentiles=[0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99],
     )
     print(extended.to_string())
 
-    print("\n--- Class distribution (0 = normal, 1 = fraud) ---")
+    print("\nClass distribution (0 = normal, 1 = fraud)")
     print(df["Class"].value_counts(dropna=False).to_string())
     print("\nProportions:")
     print(df["Class"].value_counts(normalize=True).to_string())
@@ -65,10 +65,10 @@ def print_amina_exploration(df: pd.DataFrame) -> None:
 
 def run_all(df: pd.DataFrame) -> None:
     """Run all summaries: Alessandro, Nazrin, then Amina."""
-    print("========== Alessandro: shape ==========")
+    print("Alessandro: shape ")
     print_alessandro_summary(df)
 
-    print("\n========== Nazrin: columns, head, info ==========")
+    print("\nNazrin: columns, head, info ")
     print_nazrin_summary(df)
 
     print("\n========== Amina: data exploration ==========")
