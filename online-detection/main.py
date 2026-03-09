@@ -11,7 +11,9 @@
 from river import datasets, metrics, compose, preprocessing, anomaly
 
 VERBOSE = True
-PROCESS_N_OBSERVATIONS = 2000
+
+# Set to an integer to process only the first N samples, or None to process the entire dataset.
+PROCESS_N_OBSERVATIONS = None
 
 if VERBOSE: print("\nStarting online anomaly detection on the Credit Card dataset...\n")
 
@@ -49,6 +51,9 @@ for x, y in dataset.take(PROCESS_N_OBSERVATIONS):
     model.learn_one(x)
     auc.update(y, score)
 
+if VERBOSE: print("\nFinished processing the dataset.\n")
+
 
 # Final evaluation
-print(f"Final ROC-AUC: {auc.get():.4f}")
+
+print(f"Final ROC-AUC: {auc.get():.4f}\n\n")
