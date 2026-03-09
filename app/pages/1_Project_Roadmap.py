@@ -69,11 +69,12 @@ with c2:
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 2", width="content")
-    ch.badge("Work in Progress", color="orange")
+    ch.badge("Done", color="green")
     st.write("Creating first Pipeline & Settle on Preprocessing and Evaluation Components")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 3", width="content")
+    ch.badge("Work in Progress", color="orange")
     st.write("Finalize Pipeline & Modeling, Predicting, Explaining & Evaluating Performance")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
