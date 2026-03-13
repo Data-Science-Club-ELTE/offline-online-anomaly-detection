@@ -22,8 +22,15 @@ def load_data():
     data, target = None, None
     return data, target
 
+# 2.1 Cleaning
 
-# 2. Preprocessing
+def clean_data(data):
+    # TODO: include any cleaning steps that need to be done before preprocessing.
+    # Output: cleaned_data
+    cleaned_data = None
+    return cleaned_data
+
+# 2.2 Preprocessing
 
 def preprocess_data(data):
     # TODO: Preprocess the data and convert into NumPy matrix format.
