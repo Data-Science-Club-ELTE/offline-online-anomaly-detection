@@ -26,8 +26,12 @@ render_logo()
 st.title(":material/earthquake: Online Anomaly Detection")
 st.caption("Online anomaly detector for streamlined credit card transaction monitoring.")
 
-from river import datasets
-n_samples = datasets.CreditCard().n_samples
+@st.cache_data
+def get_dataset():
+    from river import datasets
+    return datasets.CreditCard()
+
+total_n_samples = get_dataset().n_samples
 
 with st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="bottom"):
 
@@ -46,7 +50,7 @@ with st.container(horizontal=True, horizontal_alignment="left", vertical_alignme
     run_btn = st.button(":material/play_circle: Execute pipeline", type="primary")
     
     global process_n_observations, report_every_seconds_elapsed
-    process_n_observations = n_selector if isinstance(n_selector, int) else n_samples
+    process_n_observations = n_selector if isinstance(n_selector, int) else total_n_samples
     report_every_seconds_elapsed = report_frequency_selector * 60
 
 
@@ -94,6 +98,7 @@ if run_btn:
         time.sleep(sleep_time_selector)
 
     online_detection.pipeline(
+        cached_dataset=get_dataset(),
         process_n_observations=process_n_observations,
         report_every_seconds_elapsed=report_every_seconds_elapsed,
         report_callback=handle_report)
