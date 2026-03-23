@@ -34,7 +34,6 @@ team_member("Saidul Islam Nayan", [{"role": "Research Lead", "color": "primary"}
 
 st.subheader("Traditional (Offline) ML Development Team")
 team_member("Aibike Builasheva", [{"role": "Lead Data Scientist", "color": "primary"}, TRADITIONAL_ML_TEAM])
-team_member("Gabor Toth", [ML_MODELING, TRADITIONAL_ML_TEAM])
 team_member("Muhammad Sufyan", [ML_MODELING, TRADITIONAL_ML_TEAM])
 team_member("Jair Alessandro Cupi Olivares", [ML_MODELING, TRADITIONAL_ML_TEAM])
 team_member("Nazrin Majidova", [ML_MODELING, TRADITIONAL_ML_TEAM])
@@ -49,4 +48,3 @@ team_member("Diana Grigoryan", [{"role": "Insights Lead", "color": "primary"}, T
 
 st.subheader("Product Team")
 team_member("Matthew Balogh", [{"role": "Prototype Responsible", "color": "red"}, TRADITIONAL_ML_TEAM, STREAM_ML_TEAM])
-team_member("Gabor Toth", [{"role": "Hybrid ML Pipeline Designer", "color": "violet"}, {"role": "Banking Domain Knowledge", "color": "green"}, TRADITIONAL_ML_TEAM, STREAM_ML_TEAM])
