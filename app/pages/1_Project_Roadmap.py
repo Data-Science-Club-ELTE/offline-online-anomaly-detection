@@ -15,11 +15,12 @@ st.subheader(":material/genetics: Research")
 
 ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
 ch.caption("WEEK 1 - WEEK 3", width="content")
-ch.badge("Work in Progress", color="orange")
+ch.badge("Done", color="green")
 st.write("Research Background and Algorithm (both Traditional and Stream scenarios)")
 
 ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
 ch.caption("WEEK 4", width="content")
+ch.badge("Work in Progress", color="orange")
 st.write("Organize Research Materials")
 
 c1, c2 = st.columns([1, 1], gap="large")
@@ -34,11 +35,12 @@ with c1:
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 2", width="content")
-    ch.badge("Work in Progress", color="orange")
+    ch.badge("Done", color="green")
     st.write("Data Cleaning & EDA & Data Preprocessing")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 3", width="content")
+    ch.badge("Work in Progress", color="orange")
     st.write("Modeling, Predicting, Explaining & Evaluating Performance")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
