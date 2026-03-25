@@ -49,12 +49,24 @@ def clean_data(data):
     """
     Perform any necessary data cleaning steps on the raw data before preprocessing.
     Do consider our algorithm, Isolation Forest, may not require extensive cleaning.
+      
+   
+    Basic cleaning for credit card dataset:
+    - Remove duplicates
+    - Handle missing values
+    - Drop 'Time' feature (not informative)
     """
+    cleaned_data = data.copy()
+    cleaned_data = cleaned_data.drop_duplicates()
 
-    # TODO: ...
+    if cleaned_data.isnull().values.any():
+        cleaned_data = cleaned_data.fillna(0)
 
-    cleaned_data = data.copy() #FIXME
+    if 'Time' in cleaned_data.columns:
+        cleaned_data = cleaned_data.drop(columns=['Time'])
+
     return cleaned_data
+
 
 
 # 2.2 Preprocessing
