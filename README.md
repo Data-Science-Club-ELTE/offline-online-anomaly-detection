@@ -13,7 +13,6 @@ Detect fraudulent transactions in *Credit Card* data, in both offline and online
 | **Tynybekova, Amina**          |                         | Co-Lead             |
 | Builasheva, Aibike             | Modeling (ML)           | Lead Data Scientist |
 | Osipova, Karina                | Research                | Research Lead       |
-| Toth, Gabor                    | Modeling (ML)           |                     |
 | Sufyan, Muhammad               | Modeling (ML)           |                     |
 | Cupi Olivares, Jair Alessandro | Modeling (ML)           |
 | Majidova, Nazrin               | Modeling (ML)           |                     |
