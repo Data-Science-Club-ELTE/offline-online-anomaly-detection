@@ -31,9 +31,12 @@ def get_dataset():
     from river import datasets
     return datasets.CreditCard()
 
-total_n_samples = get_dataset().n_samples
+warning_label = st.warning("The execution will download the entire dataset. May be slow or costly for the first time.", icon="⚠️")
 
 with st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="bottom"):
+
+    global total_n_samples
+    total_n_samples = get_dataset().n_samples
 
     n_selector = st.selectbox(
         "Transaction amount", key="process_n_observations", options=[1000, 5000, "All transactions"], width=180,
@@ -55,6 +58,8 @@ with st.container(horizontal=True, horizontal_alignment="left", vertical_alignme
 
 
 if run_btn:
+
+    warning_label.empty()
 
     processed_so_far = 0
     processed_label = st.empty()
@@ -97,8 +102,10 @@ if run_btn:
         
         time.sleep(sleep_time_selector)
 
+    dataset = get_dataset()
+
     online_detection.pipeline(
-        cached_dataset=get_dataset(),
+        cached_dataset=dataset,
         process_n_observations=process_n_observations,
         report_every_seconds_elapsed=report_every_seconds_elapsed,
         report_callback=handle_report)

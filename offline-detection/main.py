@@ -127,7 +127,11 @@ def evaluate(target, y_pred):
     return metrics
 
 
-def pipeline(msg_callback=noop_callback, report_callback=noop_callback, verb=VERBOSE):
+def pipeline(
+        cached_dataset:tuple=None,
+        msg_callback=noop_callback,
+        report_callback=noop_callback,
+        verb=VERBOSE):
     """
     Pipeline function that executes the entire workflow from data loading to evaluation, while providing updates through callbacks (e.g.: for the Streamlit app).
 
@@ -155,7 +159,7 @@ def pipeline(msg_callback=noop_callback, report_callback=noop_callback, verb=VER
     verb_aware_print(msg, verb)
     msg_callback(msg=msg)
 
-    data, target = load_data()
+    data, target = cached_dataset or load_data()
     cleaned_data = clean_data(data)
     X = preprocess_data(cleaned_data)
 

@@ -27,10 +27,38 @@ render_logo()
 st.title(":material/potted_plant: Offline Anomaly Detection")
 st.caption("Traditional anomaly detector for static credit card transaction data.")
 
+@st.cache_data
+def get_dataset():
+    import kagglehub
+    
+    dataset_path = kagglehub.dataset_download("mlg-ulb/creditcardfraud")
+    csv_file = Path(dataset_path) / "creditcard.csv"
+    df = pd.read_csv(csv_file)
+
+    data = df.drop(columns=["Class"])
+    target = df["Class"]
+
+    return data, target
+
+@st.cache_data
+def get_dummy_data():
+    data = pd.DataFrame(np.random.randn(1000, 10))
+    target = pd.Series(np.random.randint(0, 2, size=1000))
+    return data, target
 
 WAIT_SEC = 1
 
-run_btn = st.button(":material/play_circle: Execute pipeline", type="primary")
+with st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="bottom"):
+    data_label = st.container(width=500)
+
+    with st.container(horizontal=True, vertical_alignment="center", gap="small"):
+        run_btn = st.button(":material/play_circle: Execute pipeline", type="primary")
+        use_real = st.toggle("Use full dataset (⚠ data-expensive)", value=False)
+
+        if use_real:
+            data_label.warning("This will download ~150MB via kagglehub. May be slow or costly.", icon="⚠️")
+        else:
+            data_label.info("Using lightweight dummy data.", icon="ℹ️")
 
 if run_btn:
     col1, col2 = st.columns(2)
@@ -59,4 +87,9 @@ if run_btn:
             )
         )
     
-    offline_detection.pipeline(msg_callback=ui_callback, report_callback=handle_report)
+    if use_real:
+        cached_dataset = get_dataset()
+    else:
+        cached_dataset = get_dummy_data()
+
+    offline_detection.pipeline(cached_dataset, msg_callback=ui_callback, report_callback=handle_report)
