@@ -58,13 +58,65 @@ def load_data():
 
 def clean_data(data):
     """
-    Perform any necessary data cleaning steps on the raw data before preprocessing.
-    Do consider our algorithm, Isolation Forest, may not require extensive cleaning.
+    Perform data cleaning steps on the feature DataFrame (Class column already removed).
+
+    Steps
+    -----
+    1. Remove exact duplicate rows.
+    2. Fill any missing values: numeric columns → column median; categorical → column mode.
+    3. Clip Amount and Time to be non-negative (negative values are physically meaningless).
+    4. Drop any column whose name contains 'id' (case-insensitive) – future-proofs against
+       surrogate keys being included in the raw data.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Feature matrix returned by load_data() (no Class column).
+
+    Returns
+    -------
+    pd.DataFrame
+        Cleaned feature matrix.
     """
 
-    # TODO: ...
+    cleaned_data = data.copy()
 
-    cleaned_data = data.copy() #FIXME
+    # Step 1: Remove duplicate rows
+    before = len(cleaned_data)
+    cleaned_data = cleaned_data.drop_duplicates(keep="first")
+    n_dupes = before - len(cleaned_data)
+    verb_aware_print(f"  [clean] Removed {n_dupes} duplicate row(s).")
+
+    # Step 2: Handle missing values (defensive – dataset is typically complete)
+    if cleaned_data.isna().any(axis=None):
+        num_cols = cleaned_data.select_dtypes(include="number").columns.tolist()
+        cleaned_data[num_cols] = cleaned_data[num_cols].fillna(
+            cleaned_data[num_cols].median()
+        )
+        cat_cols = cleaned_data.select_dtypes(exclude="number").columns.tolist()
+        for col in cat_cols:
+            if cleaned_data[col].isna().any():
+                mode_val = cleaned_data[col].mode(dropna=True)
+                fill = mode_val.iloc[0] if not mode_val.empty else "unknown"
+                cleaned_data[col] = cleaned_data[col].fillna(fill)
+        verb_aware_print("  [clean] Filled missing values (numeric→median, categorical→mode).")
+    else:
+        verb_aware_print("  [clean] No missing values found.")
+
+    # Step 3: Clip Amount and Time to non-negative values
+    for col in ["Amount", "Time"]:
+        if col in cleaned_data.columns:
+            n_neg = (cleaned_data[col] < 0).sum()
+            if n_neg > 0:
+                cleaned_data[col] = cleaned_data[col].clip(lower=0)
+                verb_aware_print(f"  [clean] Clipped {n_neg} negative value(s) in '{col}' to 0.")
+
+    # Step 4: Drop irrelevant ID-like columns (e.g. surrogate keys)
+    id_cols = [c for c in cleaned_data.columns if "id" in c.lower()]
+    if id_cols:
+        cleaned_data = cleaned_data.drop(columns=id_cols)
+        verb_aware_print(f"  [clean] Dropped irrelevant column(s): {id_cols}.")
+
     return cleaned_data
 
 
