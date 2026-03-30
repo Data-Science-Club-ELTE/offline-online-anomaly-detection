@@ -23,12 +23,12 @@ def noop_callback(**kwargs):
 
 from river import datasets, metrics, compose, preprocessing, anomaly
 
-
 def pipeline(
         process_n_observations=None, # Set to an integer to process only the first N samples, or None to process the entire dataset.
         report_every_seconds_elapsed=5*60,
         msg_callback=noop_callback,
         report_callback=noop_callback,
+        random_seed=42,
         verb=True):
 
     msg = "\n\nStarting online anomaly detection on the Credit Card dataset...\n"
@@ -37,7 +37,11 @@ def pipeline(
 
 
     # Load dataset
+    
     dataset = datasets.CreditCard()
+
+    if process_n_observations is None:
+        process_n_observations = dataset.n_samples
 
 
     msg =f"\n\nIs the dataset downloaded? {dataset.is_downloaded}\n"
@@ -46,7 +50,12 @@ def pipeline(
 
 
     # Evaluation metrics
+
+    ## thresholdless
     auc = metrics.ROCAUC()
+
+    ## threshold-based
+    class_report = metrics.ClassificationReport()
 
 
     msg ="\n\nUsing metrics of ROC-AUC to measure performance.\n"
@@ -57,7 +66,10 @@ def pipeline(
     # Model pipeline
     model = compose.Pipeline(
         preprocessing.MinMaxScaler(),
-        anomaly.HalfSpaceTrees()
+        anomaly.QuantileFilter(
+            anomaly.HalfSpaceTrees(seed=random_seed),
+            q=.99
+        )
     )
 
 
@@ -73,7 +85,7 @@ def pipeline(
     verb_aware_print(msg, verb)
     msg_callback(msg=msg)
 
-    msg = f"\n\nProcessing only the first {process_n_observations} samples...\n" if process_n_observations is not None else "\n\nProcessing the entire dataset. This may take a while...\n"
+    msg = f"\n\nProcessing only the first {process_n_observations} samples...\n" if process_n_observations < dataset.n_samples else "\n\nProcessing the entire dataset. This may take a while...\n"
     verb_aware_print(msg, verb)
     msg_callback(msg=msg)
 
@@ -94,8 +106,12 @@ def pipeline(
 
     for i, (x, y) in enumerate(dataset.take(process_n_observations)):
         score = model.score_one(x)
+        is_anomaly = model['QuantileFilter'].classify(score)
+
         model.learn_one(x)
+
         auc.update(y, score)
+        class_report.update(y, is_anomaly)
 
         seconds_elapsed = x["Time"]
 
@@ -117,6 +133,10 @@ def pipeline(
 
 
     msg = f"\n\nFinal ROC-AUC: {rocauc:.4f}\n"
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg)
+
+    msg = f"\n\nClassification Report:\n{class_report}\n"
     verb_aware_print(msg, verb)
     msg_callback(msg=msg)
 
