@@ -208,7 +208,10 @@ def pipeline(msg_callback=noop_callback, report_callback=noop_callback, verb=VER
     msg_callback(msg=msg)
 
     data, target = load_data()
+    
     cleaned_data = clean_data(data)
+    cleaned_target = target.loc[cleaned_data.index]
+
     X = preprocess_data(cleaned_data)
 
     msg = "\n\nFinished preprocessing.\n"
@@ -245,7 +248,7 @@ def pipeline(msg_callback=noop_callback, report_callback=noop_callback, verb=VER
     verb_aware_print(msg, verb)
     msg_callback(msg=msg)
 
-    metrics = evaluate(target, predictions)
+    metrics = evaluate(cleaned_target, predictions)
 
     print("\nEvaluation Metrics:")
     for metric_name, metric_value in metrics.items():
