@@ -29,6 +29,8 @@ from pathlib import Path
 
 from sklearn.ensemble import IsolationForest
 
+from sklearn.preprocessing import StandardScaler
+
 RANDOM_STATE = 42
 VERBOSE = True
 
@@ -128,9 +130,12 @@ def preprocess_data(data):
     Encode, scale, drop feature(s) if necessary, etc., convert into a numpy array.
     """
 
-    # TODO: ...
+    df = data.copy()
 
-    X = data.copy().to_numpy() #FIXME
+    scaler = StandardScaler()
+    df[['Time', 'Amount']] = scaler.fit_transform(df[['Time', 'Amount']])
+
+    X = df.to_numpy() 
     return X
 
 
