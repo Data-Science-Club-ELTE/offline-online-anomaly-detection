@@ -60,13 +60,65 @@ def load_data():
 
 def clean_data(data):
     """
-    Perform any necessary data cleaning steps on the raw data before preprocessing.
-    Do consider our algorithm, Isolation Forest, may not require extensive cleaning.
+    Perform data cleaning steps on the feature DataFrame (Class column already removed).
+
+    Steps
+    -----
+    1. Remove exact duplicate rows.
+    2. Fill any missing values: numeric columns → column median; categorical → column mode.
+    3. Clip Amount and Time to be non-negative (negative values are physically meaningless).
+    4. Drop any column whose name contains 'id' (case-insensitive) – future-proofs against
+       surrogate keys being included in the raw data.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Feature matrix returned by load_data() (no Class column).
+
+    Returns
+    -------
+    pd.DataFrame
+        Cleaned feature matrix.
     """
 
-    # TODO: ...
+    cleaned_data = data.copy()
 
-    cleaned_data = data.copy() #FIXME
+    # Step 1: Remove duplicate rows
+    before = len(cleaned_data)
+    cleaned_data = cleaned_data.drop_duplicates(keep="first")
+    n_dupes = before - len(cleaned_data)
+    verb_aware_print(f"  [clean] Removed {n_dupes} duplicate row(s).")
+
+    # Step 2: Handle missing values (defensive – dataset is typically complete)
+    if cleaned_data.isna().any(axis=None):
+        num_cols = cleaned_data.select_dtypes(include="number").columns.tolist()
+        cleaned_data[num_cols] = cleaned_data[num_cols].fillna(
+            cleaned_data[num_cols].median()
+        )
+        cat_cols = cleaned_data.select_dtypes(exclude="number").columns.tolist()
+        for col in cat_cols:
+            if cleaned_data[col].isna().any():
+                mode_val = cleaned_data[col].mode(dropna=True)
+                fill = mode_val.iloc[0] if not mode_val.empty else "unknown"
+                cleaned_data[col] = cleaned_data[col].fillna(fill)
+        verb_aware_print("  [clean] Filled missing values (numeric→median, categorical→mode).")
+    else:
+        verb_aware_print("  [clean] No missing values found.")
+
+    # Step 3: Clip Amount and Time to non-negative values
+    for col in ["Amount", "Time"]:
+        if col in cleaned_data.columns:
+            n_neg = (cleaned_data[col] < 0).sum()
+            if n_neg > 0:
+                cleaned_data[col] = cleaned_data[col].clip(lower=0)
+                verb_aware_print(f"  [clean] Clipped {n_neg} negative value(s) in '{col}' to 0.")
+
+    # Step 4: Drop irrelevant ID-like columns (e.g. surrogate keys)
+    id_cols = [c for c in cleaned_data.columns if "id" in c.lower()]
+    if id_cols:
+        cleaned_data = cleaned_data.drop(columns=id_cols)
+        verb_aware_print(f"  [clean] Dropped irrelevant column(s): {id_cols}.")
+
     return cleaned_data
 
 
@@ -94,40 +146,52 @@ def modeling(X):
     Select hyperparameters and fit the Isolation Forest algorithm on the preprocessed data.
     """
 
-    # TODO remove dummy, use Isolation Forest
-    from sklearn.dummy import DummyClassifier
     hyparams = {"random_state": RANDOM_STATE, "verbose": VERBOSE}
-    model = DummyClassifier().fit(X, np.zeros(X.shape[0]))
+    verb_aware_print(f"  [model] Fitting IsolationForest with {hyparams}...")
+
+    model = IsolationForest(**hyparams)
+    model.fit(X)
 
     return model
 
 
 # 4. Prediction
 
-def predict(model, X):
+def predict(model, X, threshold=0.0):
     """
     Use the fitted model to make predictions on the same data that it was fitted on.
+    Uses the model's decision function to classify anomalies via a threshold.
     """
 
-    y_pred = model.predict(X) #FIXME
-    return y_pred
+    # Get raw anomaly scores (lower means more anomalous)
+    scores = model.decision_function(X)
+    
+    # Classify anomalies manually via threshold
+    # Our target uses: 1 for fraud (anomaly), 0 for normal
+    y_pred = (scores < threshold).astype(int)
+    
+    return {"preds": y_pred, "scores": scores}
 
 
 # 5. Evaluation
 
-def evaluate(target, y_pred):
+def evaluate(target, y_pred, y_scores=None):
     """
     Evaluate the performance of the model using appropriate metrics for anomaly detection.
     """
 
-    # FIXME
-    # Extremenly important! DummyClassifier gives 0.99 / 0.00 / 0.00 for accuracy / recall / precision, which is useless for anomaly detection.
-    from sklearn.metrics import accuracy_score, recall_score, precision_score
+    from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, average_precision_score, roc_auc_score
+    
     metrics = {
         "accuracy": accuracy_score(target, y_pred),
         "recall": recall_score(target, y_pred),
-        "precision": precision_score(target, y_pred)
+        "precision": precision_score(target, y_pred),
+        "f1_score": f1_score(target, y_pred)
     }
+    
+    if y_scores is not None:
+        metrics["auprc"] = average_precision_score(target, -y_scores) # negative because lower scores = more anomalous
+        metrics["roc_auc"] = roc_auc_score(target, -y_scores)
 
     return metrics
 
@@ -162,6 +226,10 @@ def pipeline(msg_callback=noop_callback, report_callback=noop_callback, verb=VER
 
     data, target = load_data()
     cleaned_data = clean_data(data)
+    
+    # Align the target vector with the cleaned data's remaining indices
+    target = target.loc[cleaned_data.index]
+    
     X = preprocess_data(cleaned_data)
 
     msg = "\n\nFinished preprocessing.\n"
@@ -198,7 +266,7 @@ def pipeline(msg_callback=noop_callback, report_callback=noop_callback, verb=VER
     verb_aware_print(msg, verb)
     msg_callback(msg=msg)
 
-    metrics = evaluate(target, predictions)
+    metrics = evaluate(target, predictions["preds"], predictions["scores"])
 
     print("\nEvaluation Metrics:")
     for metric_name, metric_value in metrics.items():
