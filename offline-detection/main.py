@@ -277,7 +277,8 @@ def pipeline(
         print(f"{metric_name}: {metric_value}")
 
     to_report = {
-        "predictions": predictions,
+        "preds": predictions["preds"],
+        "scores": predictions["scores"],
         "metrics": metrics,
     }
 

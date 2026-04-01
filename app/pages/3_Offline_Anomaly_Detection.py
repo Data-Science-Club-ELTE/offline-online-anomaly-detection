@@ -72,7 +72,7 @@ if run_btn:
         if end is True: message_box.update(state="complete", label="Finished!")
 
     def handle_report(news, **kwargs):
-        values, counts = np.unique(news["predictions"], return_counts=True)
+        values, counts = np.unique(news["preds"], return_counts=True)
 
         df = pd.DataFrame({
             "label": pd.Series(values).map({0: "Normal", 1: "Anomaly"}),
