@@ -146,40 +146,52 @@ def modeling(X):
     Select hyperparameters and fit the Isolation Forest algorithm on the preprocessed data.
     """
 
-    # TODO remove dummy, use Isolation Forest
-    from sklearn.dummy import DummyClassifier
     hyparams = {"random_state": RANDOM_STATE, "verbose": VERBOSE}
-    model = DummyClassifier().fit(X, np.zeros(X.shape[0]))
+    verb_aware_print(f"  [model] Fitting IsolationForest with {hyparams}...")
+
+    model = IsolationForest(**hyparams)
+    model.fit(X)
 
     return model
 
 
 # 4. Prediction
 
-def predict(model, X):
+def predict(model, X, threshold=0.0):
     """
     Use the fitted model to make predictions on the same data that it was fitted on.
+    Uses the model's decision function to classify anomalies via a threshold.
     """
 
-    y_pred = model.predict(X) #FIXME
-    return y_pred
+    # Get raw anomaly scores (lower means more anomalous)
+    scores = model.decision_function(X)
+    
+    # Classify anomalies manually via threshold
+    # Our target uses: 1 for fraud (anomaly), 0 for normal
+    y_pred = (scores < threshold).astype(int)
+    
+    return {"preds": y_pred, "scores": scores}
 
 
 # 5. Evaluation
 
-def evaluate(target, y_pred):
+def evaluate(target, y_pred, y_scores=None):
     """
     Evaluate the performance of the model using appropriate metrics for anomaly detection.
     """
 
-    # FIXME
-    # Extremenly important! DummyClassifier gives 0.99 / 0.00 / 0.00 for accuracy / recall / precision, which is useless for anomaly detection.
-    from sklearn.metrics import accuracy_score, recall_score, precision_score
+    from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, average_precision_score, roc_auc_score
+    
     metrics = {
         "accuracy": accuracy_score(target, y_pred),
         "recall": recall_score(target, y_pred),
-        "precision": precision_score(target, y_pred)
+        "precision": precision_score(target, y_pred),
+        "f1_score": f1_score(target, y_pred)
     }
+    
+    if y_scores is not None:
+        metrics["auprc"] = average_precision_score(target, -y_scores) # negative because lower scores = more anomalous
+        metrics["roc_auc"] = roc_auc_score(target, -y_scores)
 
     return metrics
 
@@ -215,8 +227,10 @@ def pipeline(msg_callback=noop_callback, report_callback=noop_callback, verb=VER
     data, target = load_data()
     
     cleaned_data = clean_data(data)
-    cleaned_target = target.loc[cleaned_data.index]
-
+    
+    # Align the target vector with the cleaned data's remaining indices
+    target = target.loc[cleaned_data.index]
+    
     X = preprocess_data(cleaned_data)
 
     msg = "\n\nFinished preprocessing.\n"
@@ -253,7 +267,7 @@ def pipeline(msg_callback=noop_callback, report_callback=noop_callback, verb=VER
     verb_aware_print(msg, verb)
     msg_callback(msg=msg)
 
-    metrics = evaluate(cleaned_target, predictions)
+    metrics = evaluate(target, predictions["preds"], predictions["scores"])
 
     print("\nEvaluation Metrics:")
     for metric_name, metric_value in metrics.items():
