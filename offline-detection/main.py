@@ -81,11 +81,9 @@ def clean_data(data):
         Cleaned feature matrix.
     """
 
-    cleaned_data = data.copy()
-
     # Step 1: Remove duplicate rows
-    before = len(cleaned_data)
-    cleaned_data = cleaned_data.drop_duplicates(keep="first")
+    before = len(data)
+    cleaned_data = data.drop_duplicates(keep="first")
     n_dupes = before - len(cleaned_data)
     verb_aware_print(f"  [clean] Removed {n_dupes} duplicate row(s).")
 
@@ -130,12 +128,10 @@ def preprocess_data(data):
     Encode, scale, drop feature(s) if necessary, etc., convert into a numpy array.
     """
 
-    df = data.copy()
-
     scaler = StandardScaler()
-    df[['Time', 'Amount']] = scaler.fit_transform(df[['Time', 'Amount']])
+    data[['Time', 'Amount']] = scaler.fit_transform(data[['Time', 'Amount']])
 
-    X = df.to_numpy() 
+    X = data.to_numpy() 
     return X
 
 
