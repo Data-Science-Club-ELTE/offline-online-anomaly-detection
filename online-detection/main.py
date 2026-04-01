@@ -24,6 +24,7 @@ def noop_callback(**kwargs):
 from river import datasets, metrics, compose, preprocessing, anomaly
 
 def pipeline(
+        cached_dataset=None,
         process_n_observations=None, # Set to an integer to process only the first N samples, or None to process the entire dataset.
         report_every_seconds_elapsed=5*60,
         msg_callback=noop_callback,
@@ -37,8 +38,7 @@ def pipeline(
 
 
     # Load dataset
-    
-    dataset = datasets.CreditCard()
+    dataset = cached_dataset or datasets.CreditCard()
 
     if process_n_observations is None:
         process_n_observations = dataset.n_samples
