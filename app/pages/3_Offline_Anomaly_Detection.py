@@ -53,7 +53,7 @@ with st.container(horizontal=True, horizontal_alignment="left", vertical_alignme
 
     with st.container(horizontal=True, vertical_alignment="center", gap="small"):
         run_btn = st.button(":material/play_circle: Execute pipeline", type="primary")
-        use_real = st.toggle("Use full dataset (⚠ data-expensive)", value=False)
+        use_real = st.toggle("Use full dataset (⚠ data-expensive)", value=True)
 
         if use_real:
             data_label.warning("This will download ~150MB via kagglehub. May be slow or costly.", icon="⚠️")
