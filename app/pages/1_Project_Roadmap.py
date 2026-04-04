@@ -20,6 +20,7 @@ st.write("Research Background and Algorithm (both Traditional and Stream scenari
 
 ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
 ch.caption("WEEK 4", width="content")
+ch.badge("Partially Done", color="blue")
 ch.badge("Work in Progress", color="orange")
 st.write("Organize Research Materials")
 
@@ -40,16 +41,20 @@ with c1:
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 3", width="content")
+    ch.badge("Partially Done", color="blue")
     ch.badge("Work in Progress", color="orange")
     st.write("Modeling, Predicting, Explaining & Evaluating Performance")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 4", width="content")
+    ch.badge("Partially Done", color="blue")
+    ch.badge("Work in Progress", color="orange")
     st.write("Model Tuning & Create Pipeline")
     st.markdown("_Use research materials to better understand and refine the model_")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 5", width="content")
+    ch.badge("Planned for Future", color="red")
     st.write("Hybrid Pipeline integration in Streamlit app")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
@@ -76,16 +81,20 @@ with c2:
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 3", width="content")
+    ch.badge("Partially Done", color="blue")
     ch.badge("Work in Progress", color="orange")
     st.write("Finalize Pipeline & Modeling, Predicting, Explaining & Evaluating Performance")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 4", width="content")
+    ch.badge("Partially Done", color="blue")
+    ch.badge("Work in Progress", color="orange")
     st.write("Model Tuning & Live Performance Evaluation")
     st.markdown("_Use research materials to better understand and refine the model_")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
     ch.caption("WEEK 5", width="content")
+    ch.badge("Planned for Future", color="red")
     st.write("Hybrid Pipeline integration in Streamlit app")
 
     ch = st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center")
