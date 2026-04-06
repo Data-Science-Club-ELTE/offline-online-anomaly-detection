@@ -132,6 +132,8 @@ def pipeline(
         to_report["scores"] = []
         to_report["step"] += 1
 
+    # FIXME: model may learn from validation data but shall not be included in the evaluation!
+
     for i, (x, y_for_evaluation_only) in enumerate(dataset):
         seconds_elapsed = x["Time"]
         use_tuned_threshold = tuned_initial_threshold is not None and seconds_elapsed <= threshold_tuning_params.invalidate_after_seconds
