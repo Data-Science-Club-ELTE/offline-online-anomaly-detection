@@ -104,6 +104,7 @@ if run_btn:
 
     dataset = get_dataset()
 
+    # FIXME
     online_detection.pipeline(
         cached_dataset=dataset,
         process_n_observations=process_n_observations,
