@@ -43,6 +43,7 @@ def pipeline(
     if process_n_observations is None:
         process_n_observations = dataset.n_samples
 
+    validation_size = int(0.3 * process_n_observations)
 
     msg =f"\n\nIs the dataset downloaded? {dataset.is_downloaded}\n"
     verb_aware_print(msg, verb)
@@ -62,15 +63,34 @@ def pipeline(
     verb_aware_print(msg, verb)
     msg_callback(msg=msg)
 
-
-    # Model pipeline
-    model = compose.Pipeline(
-        preprocessing.MinMaxScaler(),
-        anomaly.QuantileFilter(
-            anomaly.HalfSpaceTrees(seed=random_seed),
-            q=.99
+    # Candidate models (for tuning)
+    models = {
+        "q_0.95": compose.Pipeline(
+            preprocessing.MinMaxScaler(),
+            anomaly.QuantileFilter(
+                anomaly.HalfSpaceTrees(seed=random_seed),
+                q=0.95
+            )
+        ),
+        "q_0.99": compose.Pipeline(
+            preprocessing.MinMaxScaler(),
+            anomaly.QuantileFilter(
+                anomaly.HalfSpaceTrees(seed=random_seed),
+                q=0.99
+            )
+        ),
+        "q_0.999": compose.Pipeline(
+            preprocessing.MinMaxScaler(),
+            anomaly.QuantileFilter(
+                anomaly.HalfSpaceTrees(seed=random_seed),
+                q=0.999
+            )
         )
-    )
+    }
+
+    # Track validation performance
+    model_auc_scores = {name: metrics.ROCAUC() for name in models}
+    best_model = None
 
 
     msg = "\n\nPipeline initialized with MinMaxScaler and HalfSpaceTrees.\n"
@@ -105,13 +125,34 @@ def pipeline(
         if step: to_report["step"] += 1
 
     for i, (x, y) in enumerate(dataset.take(process_n_observations)):
-        score = model.score_one(x)
-        is_anomaly = model['QuantileFilter'].classify(score)
+        score = None
+        if i < validation_size:
+            # Validation
 
-        model.learn_one(x)
+            for name, m in models.items():
+                score = m.score_one(x)
+                model_auc_scores[name].update(y, score)
+                m.learn_one(x)
 
-        auc.update(y, score)
-        class_report.update(y, is_anomaly)
+        else:
+            # Testing Phase
+
+            if best_model is None:
+                # Select best model based on validation ROC-AUC
+                best_model_name = max(model_auc_scores, key=lambda k: model_auc_scores[k].get())
+                best_model = models[best_model_name]
+
+                msg = f"\n\nSelected best model: {best_model_name}\n"
+                verb_aware_print(msg, verb)
+                msg_callback(msg=msg)
+
+            score = best_model.score_one(x)
+            is_anomaly = best_model['QuantileFilter'].classify(score)
+
+            best_model.learn_one(x)
+
+            auc.update(y, score)
+            class_report.update(y, is_anomaly)
 
         seconds_elapsed = x["Time"]
 
@@ -147,3 +188,4 @@ def pipeline(
     msg = "\n\nPipeline execution completed.\n\n"
     verb_aware_print(msg, verb)
     msg_callback(msg=msg, end=True)
+
