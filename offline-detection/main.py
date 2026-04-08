@@ -8,6 +8,17 @@
 #
 # --------------------------------------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------------------------------------
+# Utilities
+
+def verb_aware_print(msg, verb=True):
+    if verb and msg: print(msg)
+
+def noop_callback(**kwargs):
+    pass
+
+# --------------------------------------------------------------------------------------------------------
+
 # Imports and constants
 
 import kagglehub
@@ -17,6 +28,8 @@ import pandas as pd
 from pathlib import Path
 
 from sklearn.ensemble import IsolationForest
+
+from sklearn.preprocessing import StandardScaler
 
 RANDOM_STATE = 42
 VERBOSE = True
@@ -65,9 +78,12 @@ def preprocess_data(data):
     Encode, scale, drop feature(s) if necessary, etc., convert into a numpy array.
     """
 
-    # TODO: ...
+    df = data.copy()
 
-    X = data.copy().to_numpy() #FIXME
+    scaler = StandardScaler()
+    df[['Time', 'Amount']] = scaler.fit_transform(df[['Time', 'Amount']])
+
+    X = df.to_numpy() 
     return X
 
 
@@ -116,34 +132,89 @@ def evaluate(target, y_pred):
     return metrics
 
 
-def pipeline(verb=VERBOSE):
-    if verb: print("\n\nStarting pipeline execution...\n")
+def pipeline(msg_callback=noop_callback, report_callback=noop_callback, verb=VERBOSE):
+    """
+    Pipeline function that executes the entire workflow from data loading to evaluation, while providing updates through callbacks (e.g.: for the Streamlit app).
+
+    Parameters
+    ----------
+
+    msg_callback : callable
+        A function that handles messages at the call site. It should accept a `msg` argument for the message string and an optional `end` argument to indicate if it's the end of the pipeline.
+
+    report_callback : callable
+        A function that handles a report in form of a dictionary. It should accept a `news` argument for the report.
+
+    verb : bool
+        Whether to print verbose messages.
+    """
+
+    msg = "\n\nStarting pipeline execution...\n"
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg)
+
 
     # DATA HANDLING
+
+    msg = "\n\nPreprocessing...\n"
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg)
 
     data, target = load_data()
     cleaned_data = clean_data(data)
     X = preprocess_data(cleaned_data)
 
+    msg = "\n\nFinished preprocessing.\n"
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg)
+
     # MODELING
+
+    msg = "\n\nObtaining model...\n"
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg)
 
     model = modeling(X)
 
+    msg = "\n\nFinished modeling.\n"
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg)
+
     # PREDICTION
+
+    msg = "\n\nPredicting...\n"
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg)
 
     predictions = predict(model, X)
 
+    msg = "\n\nPredictions created.\n"
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg)
+
     # EVALUATION
 
+    msg = "\n\nEvaluating results...\n"
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg)
+
     metrics = evaluate(target, predictions)
-    
+
     print("\nEvaluation Metrics:")
     for metric_name, metric_value in metrics.items():
         print(f"{metric_name}: {metric_value}")
 
+    to_report = {
+        "predictions": predictions,
+        "metrics": metrics,
+    }
 
-    if verb: print("\n\nPipeline execution completed.\n\n")
+    report_callback(news=to_report)
 
-
-# Execute the pipeline
-pipeline()
+    msg = "\n\nFinished evaluation.\n"
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg)
+    
+    msg = "\n\nPipeline execution completed.\n\n"
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg, end=True)
