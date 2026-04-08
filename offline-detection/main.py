@@ -186,7 +186,7 @@ def pipeline(msg_callback=noop_callback, report_callback=noop_callback, verb=VER
     verb_aware_print(msg, verb)
     msg_callback(msg=msg)
 
-    predictions = predict(model, X)
+    predictions, anomaly_scores = predict(model, X)
 
     msg = "\n\nPredictions created.\n"
     verb_aware_print(msg, verb)
@@ -198,7 +198,7 @@ def pipeline(msg_callback=noop_callback, report_callback=noop_callback, verb=VER
     verb_aware_print(msg, verb)
     msg_callback(msg=msg)
 
-    metrics = evaluate(target, predictions)
+    metrics = evaluate(target, predictions, anomaly_scores=anomaly_scores)
 
     print("\nEvaluation Metrics:")
     for metric_name, metric_value in metrics.items():
