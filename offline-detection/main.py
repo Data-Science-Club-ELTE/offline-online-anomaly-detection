@@ -184,7 +184,7 @@ def _metrics_for_display(metrics: Dict[str, Any]) -> Dict[str, Any]:
 # Orchestration
 # --------------------------------------------------------------------------------------------------------
 
-def pipeline(cached_dataset:tuple=None, msg_callback: Callable = noop_callback, report_callback: Callable = noop_callback, verb: bool = VERBOSE, tuning_fraction: float = 0.8) -> Dict[str, Any]:
+def pipeline(cached_dataset:tuple=None, msg_callback: Callable = noop_callback, report_callback: Callable = noop_callback, verb: bool = VERBOSE, tuning_fraction: float = 0.5) -> Dict[str, Any]:
     """
     Executes the end-to-end anomaly detection pipeline natively configured for transductive analysis.
     Uses a chronological split where the first `tuning_fraction` of the data calibrates the threshold, 
