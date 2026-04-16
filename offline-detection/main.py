@@ -184,9 +184,11 @@ def _metrics_for_display(metrics: Dict[str, Any]) -> Dict[str, Any]:
 # Orchestration
 # --------------------------------------------------------------------------------------------------------
 
-def pipeline(msg_callback: Callable = noop_callback, report_callback: Callable = noop_callback, verb: bool = VERBOSE) -> Dict[str, Any]:
+def pipeline(msg_callback: Callable = noop_callback, report_callback: Callable = noop_callback, verb: bool = VERBOSE, tuning_fraction: float = 0.8) -> Dict[str, Any]:
     """
     Executes the end-to-end anomaly detection pipeline natively configured for transductive analysis.
+    Uses a chronological split where the first `tuning_fraction` of the data calibrates the threshold, 
+    and the remaining future data evaluates the final isolated F1 impact.
     """
     _log("\nStarting pipeline execution...", verb, msg_callback)
 
@@ -198,30 +200,39 @@ def pipeline(msg_callback: Callable = noop_callback, report_callback: Callable =
     n_anomalies = int(target.sum())
     _log(f"Data ready: {X.shape[0]} samples, {X.shape[1]} features. Anomalies: {n_anomalies} ({target.mean():.4%}).", verb, msg_callback)
 
-    _log("Fitting Isolation Forest model...", verb, msg_callback)
+    _log("Fitting Transductive Isolation Forest model...", verb, msg_callback)
     model = modeling(X)
 
-    _log("Generating anomaly scores...", verb, msg_callback)
+    _log("Generating anomaly scores from all samples...", verb, msg_callback)
     anomaly_scores = score_samples(model, X)
 
-    _log("Optimizing decision boundary...", verb, msg_callback)
-    best_threshold, threshold_info = find_optimal_threshold(anomaly_scores, target)
-    _log(f"Optimal threshold: {best_threshold:.6f} (F1: {threshold_info['best_f1']:.4f})", verb, msg_callback)
+    t_split = int(len(X) * tuning_fraction)
+    _log(f"Applying chronological threshold split: {t_split} past / {len(X) - t_split} future", verb, msg_callback)
 
-    _log("Generating binary predictions...", verb, msg_callback)
-    predictions = predict_with_threshold(anomaly_scores, best_threshold)
+    # 1. TUNING PHASE (on historical data)
+    _log("Optimizing decision boundary strictly on historical data...", verb, msg_callback)
+    past_scores = anomaly_scores[:t_split]
+    past_target = target.iloc[:t_split]
+    best_threshold, threshold_info = find_optimal_threshold(past_scores, past_target)
+    _log(f"Historical Optimal Threshold: {best_threshold:.6f} (Historical F1: {threshold_info['best_f1']:.4f})", verb, msg_callback)
 
-    _log("Evaluating results...", verb, msg_callback)
-    metrics = evaluate(target, predictions, anomaly_scores)
+    # 2. EVALUATION PHASE (on future, unseen data)
+    _log("Generating binary predictions for future unseen data...", verb, msg_callback)
+    future_scores = anomaly_scores[t_split:]
+    future_target = target.iloc[t_split:]
+    future_predictions = predict_with_threshold(future_scores, best_threshold)
+
+    _log("Evaluating future validation results...", verb, msg_callback)
+    metrics = evaluate(future_target, future_predictions, future_scores)
 
     if verb:
-        print("\nEvaluation Metrics:")
+        print("\nFuture Unseen Evaluation Metrics:")
         for k, v in _metrics_for_display(metrics).items():
             print(f"  {k}: {v}")
 
     to_report = {
-        "predictions": predictions,
-        "anomaly_scores": anomaly_scores,
+        "future_predictions": future_predictions,
+        "future_anomaly_scores": future_scores,
         "metrics": metrics,
         "threshold_info": threshold_info,
     }
