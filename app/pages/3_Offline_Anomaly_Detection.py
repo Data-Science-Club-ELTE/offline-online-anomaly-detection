@@ -40,30 +40,16 @@ def get_dataset():
 
     return data, target
 
-@st.cache_data
-def get_dummy_data():
-    data = pd.DataFrame(np.random.randn(1000, 10))
-    target = pd.Series(np.random.randint(0, 2, size=1000))
-    return data, target
-
-WAIT_SEC = 1
+WAIT_SEC = .25
 
 with st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="bottom"):
-    data_label = st.container(width=500)
-
-    with st.container(horizontal=True, vertical_alignment="center", gap="small"):
-        run_btn = st.button(":material/play_circle: Execute pipeline", type="primary")
-        use_real = st.toggle("Use full dataset (⚠ data-expensive)", value=True)
-
-        if use_real:
-            data_label.warning("This will download ~150MB via kagglehub. May be slow or costly.", icon="⚠️")
-        else:
-            data_label.info("Using lightweight dummy data.", icon="ℹ️")
+    run_btn = st.button(":material/play_circle: Execute pipeline", type="primary")
 
 if run_btn:
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 2])
     message_box = col1.status("Executing Offline pipeline...", expanded=True, state="running")
-    chart_placeholder = col2.empty()
+    metrics_placeholder = col2.container()
+    chart_placeholder = col2.container()
 
     def ui_callback(msg, end=None):
         message_box.write(msg)
@@ -72,24 +58,73 @@ if run_btn:
         if end is True: message_box.update(state="complete", label="Finished!")
 
     def handle_report(news, **kwargs):
-        values, counts = np.unique(news["preds"], return_counts=True)
+        metrics = news.get("metrics", {})
+
+        with metrics_placeholder:
+            st.subheader("Key Indicators")
+
+            indicator_labels = {
+                "pr_auc": "PR AUC",
+                "precision": "Precision",
+                "recall": "Recall",
+                "f1": "F1",
+                "predicted_anomaly_rate": "Predicted Anomaly Rate",
+                "k_ratio": "K Ratio",
+                "k": "K",
+                "precision_at_k": "Precision@K",
+                "recall_at_k": "Recall@K",
+            }
+
+            indicator_values = []
+            for key, value in metrics.items():
+                if key in {"pr_curve_precision", "pr_curve_recall"}:
+                    continue
+                if isinstance(value, (int, float, np.integer, np.floating)):
+                    indicator_values.append((key, float(value)))
+
+            if indicator_values:
+                columns = st.columns(4)
+                percent_keys = {
+                    "precision",
+                    "recall",
+                    "f1",
+                    "predicted_anomaly_rate",
+                    "k_ratio",
+                    "precision_at_k",
+                    "recall_at_k",
+                }
+
+                for idx, (key, value) in enumerate(indicator_values):
+                    label = indicator_labels.get(key, key.replace("_", " ").title())
+                    if key in percent_keys:
+                        formatted_value = f"{value:.2%}"
+                    elif key == "k":
+                        formatted_value = f"{int(round(value))}"
+                    else:
+                        formatted_value = f"{value:.4f}"
+                    columns[idx % 4].metric(label, formatted_value)
+            else:
+                st.info("No scalar metrics available for indicators.")
+
+        values, counts = np.unique(news["future_predictions"], return_counts=True)
 
         df = pd.DataFrame({
             "label": pd.Series(values).map({0: "Normal", 1: "Anomaly"}),
             "count": counts
         })
-        chart_placeholder.altair_chart(
-            alt.Chart(df).mark_bar().encode(
-                x="label:N",
-                y="count:Q",
-            ).properties(
-                title="Predictions of the pipeline"
-            )
+
+        base_chart = alt.Chart(df).encode(
+            x=alt.X("label:N", title="Label"),
+            y=alt.Y("count:Q", title="Count"),
         )
+
+        bars = base_chart.mark_bar()
+        labels = base_chart.mark_text(dy=-8).encode(text="count:Q")
+
+        with chart_placeholder:
+            st.subheader("Predictions of the pipeline")
+            st.altair_chart((bars + labels).properties())
     
-    if use_real:
-        cached_dataset = get_dataset()
-    else:
-        cached_dataset = get_dummy_data()
+    cached_dataset = get_dataset()
 
     offline_detection.pipeline(cached_dataset, msg_callback=ui_callback, report_callback=handle_report)
