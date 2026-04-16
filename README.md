@@ -106,5 +106,20 @@ Please follow this workflow to keep the project consistent and reviewable.
 
 ## Results
 
-> [!CAUTION]
-> This section is reserved for discussing the project results at the **end of the semester**.
+Following these steps, we implemented an offline (traditional) anomaly detector pipeline:
+
+- Preliminary Data Analysis
+- Data Cleaning and Preprocessing
+- Transductive Modeling via Isolation Forest
+- Threshold Tuning
+- Performance Evaluation via thresholdless, threshold-based, and @K metrics
+
+The resulting performance is:
+
+|       | PR AUC | Precision | Recall | F1 Score |
+| :---- | -----: | --------: | -----: | -------: |
+| Score |  0.076 |     0.110 |  0.199 |    0.142 |
+
+|             | Top-K Ratio | K (Top Items) | Precision@K | Recall@K |
+| :---------- | ----------: | ------------: | ----------: | -------: |
+| Top-K Score |       0.010 |          1418 |       0.078 |    0.521 |

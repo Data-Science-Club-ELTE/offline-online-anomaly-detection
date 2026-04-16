@@ -61,11 +61,6 @@ def load_data() -> Tuple[pd.DataFrame, pd.Series]:
 
     assert "Class" in df.columns, "Target variable 'Class' not found in dataset."
 
-    initial_shape = df.shape
-    df = df.drop_duplicates(keep="first")
-    if initial_shape[0] - df.shape[0] > 0:
-        print(f"\n[load_data] Dropped {initial_shape[0] - df.shape[0]} duplicate rows.")
-
     data = df.drop(columns=["Class"])
     target = df["Class"]
 
@@ -80,6 +75,14 @@ def report_data_quality(df: pd.DataFrame, title: str) -> None:
     if not missing_cols.empty:
         for col, count in missing_cols.items():
             print(f"  - {col}: {count}")
+
+def drop_duplicates(df: pd.DataFrame) -> pd.DataFrame:
+    """Removes duplicate rows from the dataset."""
+    initial_shape = df.shape
+    df = df.drop_duplicates(keep="first")
+    if initial_shape[0] - df.shape[0] > 0:
+        print(f"\n[load_data] Dropped {initial_shape[0] - df.shape[0]} duplicate rows.")
+    return df
 
 def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     """Imputes missing numeric features via median and categorical via mode."""
@@ -167,6 +170,7 @@ def evaluate(target: np.ndarray, y_pred: np.ndarray, anomaly_scores: np.ndarray,
     total_positives = int(np.sum(y_true))
 
     metrics["k_ratio"] = float(top_k_ratio)
+    metrics["k"] = float(k)
     metrics["precision_at_k"] = float(np.mean(top_k_true))
     metrics["recall_at_k"] = float(np.sum(top_k_true) / total_positives) if total_positives > 0 else 0.0
 
@@ -195,7 +199,8 @@ def pipeline(cached_dataset:tuple=None, msg_callback: Callable = noop_callback, 
     _log("Loading and preprocessing data...", verb, msg_callback)
     
     data, target = cached_dataset or load_data()
-    cleaned_data = clean_data(data)
+    cleaned_data = drop_duplicates(data)
+    cleaned_data = clean_data(cleaned_data)
     
     # Align the target vector with the cleaned data's remaining indices
     target = target.loc[cleaned_data.index]
