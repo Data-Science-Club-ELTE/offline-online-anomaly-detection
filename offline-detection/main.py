@@ -8,222 +8,190 @@
 #
 # --------------------------------------------------------------------------------------------------------
 
-# --------------------------------------------------------------------------------------------------------
-# Utilities
-
-def verb_aware_print(msg, verb=True):
-    if verb and msg: print(msg)
-
-def noop_callback(**kwargs):
-    pass
-
-# --------------------------------------------------------------------------------------------------------
-
-# Imports and constants
-
 import kagglehub
 import numpy as np
 import pandas as pd
-
 from pathlib import Path
+from typing import Tuple, Dict, Any, Callable
 
 from sklearn.ensemble import IsolationForest
-
+from sklearn.metrics import (
+    average_precision_score,
+    f1_score,
+    precision_recall_curve,
+    precision_score,
+    recall_score,
+)
 from sklearn.preprocessing import StandardScaler
 
 RANDOM_STATE = 42
 VERBOSE = True
 
+DEFAULT_IF_PARAMS = {
+    "n_estimators": 300,
+    "max_samples": "auto",
+    "contamination": "auto",
+}
 
-# 1. Load data
+# --------------------------------------------------------------------------------------------------------
+# Utilities
+# --------------------------------------------------------------------------------------------------------
 
-def load_data():
-    """
-    Load the credit card fraud dataset and separate features from the target variable.
-    """
+def verb_aware_print(msg: str, verb: bool = True):
+    if verb and msg:
+        print(msg)
 
+def noop_callback(**kwargs):
+    pass
+
+def _log(msg: str, verb: bool, msg_callback: Callable, end: bool = False):
+    """Helper to handle both console printing and UI callbacks."""
+    verb_aware_print(msg, verb)
+    msg_callback(msg=msg, end=end)
+
+# --------------------------------------------------------------------------------------------------------
+# Pipeline Components
+# --------------------------------------------------------------------------------------------------------
+
+def load_data() -> Tuple[pd.DataFrame, pd.Series]:
+    """Retrieves credit card dataset and separates features from the target variable."""
     dataset_path = kagglehub.dataset_download("mlg-ulb/creditcardfraud")
     csv_file = Path(dataset_path) / "creditcard.csv"
     df = pd.read_csv(csv_file)
 
-    assert "Class" in df.columns, "Target variable 'Class' not found in the dataset."
+    assert "Class" in df.columns, "Target variable 'Class' not found in dataset."
+
+    initial_shape = df.shape
+    df = df.drop_duplicates(keep="first")
+    if initial_shape[0] - df.shape[0] > 0:
+        print(f"\n[load_data] Dropped {initial_shape[0] - df.shape[0]} duplicate rows.")
 
     data = df.drop(columns=["Class"])
     target = df["Class"]
 
-    assert "Class" not in data.columns, "Target variable 'Class' should not be part of the data."
-
     return data, target
 
+def report_data_quality(df: pd.DataFrame, title: str) -> None:
+    """Logs dataset shape and missing value statistics."""
+    missing = df.isna().sum()
+    missing_cols = missing[missing > 0]
+    print(f"\n===== {title} =====")
+    print(f"Shape: {df.shape} | Duplicate rows: {df.duplicated().sum()} | Missing values: {missing.sum()}")
+    if not missing_cols.empty:
+        for col, count in missing_cols.items():
+            print(f"  - {col}: {count}")
 
-# 2.1 Cleaning
+def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
+    """Imputes missing numeric features via median and categorical via mode."""
+    if df.isna().sum().sum() == 0:
+        return df
 
-def clean_data(data):
-    """
-    Perform data cleaning steps on the feature DataFrame (Class column already removed).
+    cleaned = df.copy()
+    
+    num_cols = cleaned.select_dtypes("number").columns
+    cleaned[num_cols] = cleaned[num_cols].fillna(cleaned[num_cols].median())
 
-    Steps
-    -----
-    1. Remove exact duplicate rows.
-    2. Fill any missing values: numeric columns → column median; categorical → column mode.
-    3. Clip Amount and Time to be non-negative (negative values are physically meaningless).
-    4. Drop any column whose name contains 'id' (case-insensitive) – future-proofs against
-       surrogate keys being included in the raw data.
+    obj_cols = cleaned.select_dtypes(exclude="number").columns
+    for col in obj_cols:
+        if cleaned[col].isna().any():
+            mode_val = cleaned[col].mode(dropna=True)
+            fill_val = mode_val.iloc[0] if not mode_val.empty else "unknown"
+            cleaned[col] = cleaned[col].fillna(fill_val)
 
-    Parameters
-    ----------
-    data : pd.DataFrame
-        Feature matrix returned by load_data() (no Class column).
+    return cleaned
 
-    Returns
-    -------
-    pd.DataFrame
-        Cleaned feature matrix.
-    """
+def clean_data(data: pd.DataFrame) -> pd.DataFrame:
+    """Orchestrates data cleaning steps."""
+    report_data_quality(data, "Before Cleaning")
+    df = handle_missing_values(data)
+    report_data_quality(df, "After Cleaning")
+    return df
 
-    # Step 1: Remove duplicate rows
-    before = len(data)
-    cleaned_data = data.drop_duplicates(keep="first")
-    n_dupes = before - len(cleaned_data)
-    verb_aware_print(f"  [clean] Removed {n_dupes} duplicate row(s).")
-
-    # Step 2: Handle missing values (defensive – dataset is typically complete)
-    if cleaned_data.isna().any(axis=None):
-        num_cols = cleaned_data.select_dtypes(include="number").columns.tolist()
-        cleaned_data[num_cols] = cleaned_data[num_cols].fillna(
-            cleaned_data[num_cols].median()
-        )
-        cat_cols = cleaned_data.select_dtypes(exclude="number").columns.tolist()
-        for col in cat_cols:
-            if cleaned_data[col].isna().any():
-                mode_val = cleaned_data[col].mode(dropna=True)
-                fill = mode_val.iloc[0] if not mode_val.empty else "unknown"
-                cleaned_data[col] = cleaned_data[col].fillna(fill)
-        verb_aware_print("  [clean] Filled missing values (numeric→median, categorical→mode).")
-    else:
-        verb_aware_print("  [clean] No missing values found.")
-
-    # Step 3: Clip Amount and Time to non-negative values
-    for col in ["Amount", "Time"]:
-        if col in cleaned_data.columns:
-            n_neg = (cleaned_data[col] < 0).sum()
-            if n_neg > 0:
-                cleaned_data[col] = cleaned_data[col].clip(lower=0)
-                verb_aware_print(f"  [clean] Clipped {n_neg} negative value(s) in '{col}' to 0.")
-
-    # Step 4: Drop irrelevant ID-like columns (e.g. surrogate keys)
-    id_cols = [c for c in cleaned_data.columns if "id" in c.lower()]
-    if id_cols:
-        cleaned_data = cleaned_data.drop(columns=id_cols)
-        verb_aware_print(f"  [clean] Dropped irrelevant column(s): {id_cols}.")
-
-    return cleaned_data
-
-
-# 2.2 Preprocessing
-
-def preprocess_data(data):
-    """
-    Preprocess the cleaned data to make it suitable for modeling with Isolation Forest.
-    Encode, scale, drop feature(s) if necessary, etc., convert into a numpy array.
-    """
-
+def preprocess_data(data: pd.DataFrame) -> np.ndarray:
+    """Scales numeric features and converts data to a numpy array."""
+    df = data.copy()
     scaler = StandardScaler()
-    data[['Time', 'Amount']] = scaler.fit_transform(data[['Time', 'Amount']])
+    df[['Time', 'Amount']] = scaler.fit_transform(df[['Time', 'Amount']])
+    return df.to_numpy()
 
-    X = data.to_numpy() 
-    return X
+def modeling(X: np.ndarray, if_params: dict = None) -> IsolationForest:
+    """Fits an Isolation Forest model transductively on the complete dataset."""
+    params = {**DEFAULT_IF_PARAMS, "random_state": RANDOM_STATE, "n_jobs": -1}
+    if if_params:
+        params.update(if_params)
+    return IsolationForest(**params).fit(X)
 
+def score_samples(model: IsolationForest, X: np.ndarray) -> np.ndarray:
+    """Generates continuous anomaly scores. Higher values indicate higher anomaly probability."""
+    return -model.score_samples(X)
 
-# 3. Modeling
+def find_optimal_threshold(anomaly_scores: np.ndarray, labels: np.ndarray) -> Tuple[float, Dict[str, float]]:
+    """Calculates the threshold that maximizes the F1 score based on precision-recall curves."""
+    labels = np.asarray(labels).astype(int)
+    anomaly_scores = np.asarray(anomaly_scores)
 
-def modeling(X):
-    """
-    Select hyperparameters and fit the Isolation Forest algorithm on the preprocessed data.
-    """
+    precisions, recalls, thresholds = precision_recall_curve(labels, anomaly_scores)
+    f1_scores = 2 * (precisions * recalls) / (precisions + recalls + 1e-10)
 
-    hyparams = {"random_state": RANDOM_STATE, "verbose": VERBOSE}
-    verb_aware_print(f"  [model] Fitting IsolationForest with {hyparams}...")
+    best_idx = np.argmax(f1_scores[:-1])
+    best_threshold = float(thresholds[best_idx])
 
-    model = IsolationForest(**hyparams)
-    model.fit(X)
-
-    return model
-
-
-# 4. Prediction
-
-def predict(model, X, threshold=0.0):
-    """
-    Use the fitted model to make predictions on the same data that it was fitted on.
-    Uses the model's decision function to classify anomalies via a threshold.
-    """
-
-    # Get raw anomaly scores (lower means more anomalous)
-    scores = model.decision_function(X)
-    
-    # Classify anomalies manually via threshold
-    # Our target uses: 1 for fraud (anomaly), 0 for normal
-    y_pred = (scores < threshold).astype(int)
-    
-    return {"preds": y_pred, "scores": scores}
-
-
-# 5. Evaluation
-
-def evaluate(target, y_pred, y_scores=None):
-    """
-    Evaluate the performance of the model using appropriate metrics for anomaly detection.
-    """
-
-    from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, average_precision_score, roc_auc_score
-    
-    metrics = {
-        "accuracy": accuracy_score(target, y_pred),
-        "recall": recall_score(target, y_pred),
-        "precision": precision_score(target, y_pred),
-        "f1_score": f1_score(target, y_pred)
+    return best_threshold, {
+        "best_f1": float(f1_scores[best_idx]),
+        "best_precision": float(precisions[best_idx]),
+        "best_recall": float(recalls[best_idx]),
+        "threshold": best_threshold,
     }
-    
-    if y_scores is not None:
-        metrics["auprc"] = average_precision_score(target, -y_scores) # negative because lower scores = more anomalous
-        metrics["roc_auc"] = roc_auc_score(target, -y_scores)
+
+def predict_with_threshold(anomaly_scores: np.ndarray, threshold: float) -> np.ndarray:
+    """Applies a scalar threshold to continuous scores to produce binary classifications."""
+    return (anomaly_scores >= threshold).astype(int)
+
+def evaluate(target: np.ndarray, y_pred: np.ndarray, anomaly_scores: np.ndarray, top_k_ratio: float = 0.01) -> Dict[str, float]:
+    """Generates a suite of evaluation metrics standard for imbalanced anomaly detection."""
+    y_true = np.asarray(target).astype(int)
+    y_pred = np.asarray(y_pred).astype(int)
+    anomaly_scores = np.asarray(anomaly_scores)
+
+    metrics = {
+        "pr_auc": float(average_precision_score(y_true, anomaly_scores)),
+        "precision": float(precision_score(y_true, y_pred, zero_division=0)),
+        "recall": float(recall_score(y_true, y_pred, zero_division=0)),
+        "f1": float(f1_score(y_true, y_pred, zero_division=0)),
+        "predicted_anomaly_rate": float(np.mean(y_pred)),
+    }
+
+    k = max(1, int(len(y_true) * top_k_ratio))
+    top_k_idx = np.argsort(anomaly_scores)[-k:]
+    top_k_true = y_true[top_k_idx]
+    total_positives = int(np.sum(y_true))
+
+    metrics["k_ratio"] = float(top_k_ratio)
+    metrics["precision_at_k"] = float(np.mean(top_k_true))
+    metrics["recall_at_k"] = float(np.sum(top_k_true) / total_positives) if total_positives > 0 else 0.0
+
+    pr_precision, pr_recall, _ = precision_recall_curve(y_true, anomaly_scores)
+    metrics["pr_curve_precision"] = pr_precision.tolist()
+    metrics["pr_curve_recall"] = pr_recall.tolist()
 
     return metrics
 
+def _metrics_for_display(metrics: Dict[str, Any]) -> Dict[str, Any]:
+    """Filters large array metrics from standard logging output."""
+    return {k: v for k, v in metrics.items() if k not in {"pr_curve_precision", "pr_curve_recall"}}
 
-def pipeline(
-        cached_dataset:tuple=None,
-        msg_callback=noop_callback,
-        report_callback=noop_callback,
-        verb=VERBOSE):
+# --------------------------------------------------------------------------------------------------------
+# Orchestration
+# --------------------------------------------------------------------------------------------------------
+
+def pipeline(cached_dataset:tuple=None, msg_callback: Callable = noop_callback, report_callback: Callable = noop_callback, verb: bool = VERBOSE) -> Dict[str, Any]:
     """
-    Pipeline function that executes the entire workflow from data loading to evaluation, while providing updates through callbacks (e.g.: for the Streamlit app).
-
-    Parameters
-    ----------
-
-    msg_callback : callable
-        A function that handles messages at the call site. It should accept a `msg` argument for the message string and an optional `end` argument to indicate if it's the end of the pipeline.
-
-    report_callback : callable
-        A function that handles a report in form of a dictionary. It should accept a `news` argument for the report.
-
-    verb : bool
-        Whether to print verbose messages.
+    Executes the end-to-end anomaly detection pipeline natively configured for transductive analysis.
     """
+    _log("\nStarting pipeline execution...", verb, msg_callback)
 
-    msg = "\n\nStarting pipeline execution...\n"
-    verb_aware_print(msg, verb)
-    msg_callback(msg=msg)
-
-
-    # DATA HANDLING
-
-    msg = "\n\nPreprocessing...\n"
-    verb_aware_print(msg, verb)
-    msg_callback(msg=msg)
-
+    _log("Loading and preprocessing data...", verb, msg_callback)
+    
     data, target = cached_dataset or load_data()
     cleaned_data = clean_data(data)
     
@@ -232,58 +200,41 @@ def pipeline(
     
     X = preprocess_data(cleaned_data)
 
-    msg = "\n\nFinished preprocessing.\n"
-    verb_aware_print(msg, verb)
-    msg_callback(msg=msg)
+    n_anomalies = int(target.sum())
+    _log(f"Data ready: {X.shape[0]} samples, {X.shape[1]} features. Anomalies: {n_anomalies} ({target.mean():.4%}).", verb, msg_callback)
 
-    # MODELING
-
-    msg = "\n\nObtaining model...\n"
-    verb_aware_print(msg, verb)
-    msg_callback(msg=msg)
-
+    _log("Fitting Isolation Forest model...", verb, msg_callback)
     model = modeling(X)
 
-    msg = "\n\nFinished modeling.\n"
-    verb_aware_print(msg, verb)
-    msg_callback(msg=msg)
+    _log("Generating anomaly scores...", verb, msg_callback)
+    anomaly_scores = score_samples(model, X)
 
-    # PREDICTION
+    _log("Optimizing decision boundary...", verb, msg_callback)
+    best_threshold, threshold_info = find_optimal_threshold(anomaly_scores, target)
+    _log(f"Optimal threshold: {best_threshold:.6f} (F1: {threshold_info['best_f1']:.4f})", verb, msg_callback)
 
-    msg = "\n\nPredicting...\n"
-    verb_aware_print(msg, verb)
-    msg_callback(msg=msg)
+    _log("Generating binary predictions...", verb, msg_callback)
+    predictions = predict_with_threshold(anomaly_scores, best_threshold)
 
-    predictions = predict(model, X)
+    _log("Evaluating results...", verb, msg_callback)
+    metrics = evaluate(target, predictions, anomaly_scores)
 
-    msg = "\n\nPredictions created.\n"
-    verb_aware_print(msg, verb)
-    msg_callback(msg=msg)
-
-    # EVALUATION
-
-    msg = "\n\nEvaluating results...\n"
-    verb_aware_print(msg, verb)
-    msg_callback(msg=msg)
-
-    metrics = evaluate(target, predictions["preds"], predictions["scores"])
-
-    print("\nEvaluation Metrics:")
-    for metric_name, metric_value in metrics.items():
-        print(f"{metric_name}: {metric_value}")
+    if verb:
+        print("\nEvaluation Metrics:")
+        for k, v in _metrics_for_display(metrics).items():
+            print(f"  {k}: {v}")
 
     to_report = {
-        "preds": predictions["preds"],
-        "scores": predictions["scores"],
+        "predictions": predictions,
+        "anomaly_scores": anomaly_scores,
         "metrics": metrics,
+        "threshold_info": threshold_info,
     }
-
     report_callback(news=to_report)
 
-    msg = "\n\nFinished evaluation.\n"
-    verb_aware_print(msg, verb)
-    msg_callback(msg=msg)
-    
-    msg = "\n\nPipeline execution completed.\n\n"
-    verb_aware_print(msg, verb)
-    msg_callback(msg=msg, end=True)
+    _log("\nPipeline execution completed.", verb, msg_callback, end=True)
+    return to_report
+
+
+if __name__ == "__main__":
+    pipeline(verb=True)
