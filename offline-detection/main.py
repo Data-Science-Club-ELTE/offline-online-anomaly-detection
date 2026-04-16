@@ -245,7 +245,3 @@ def pipeline(cached_dataset:tuple=None, msg_callback: Callable = noop_callback, 
 
     _log("\nPipeline execution completed.", verb, msg_callback, end=True)
     return to_report
-
-
-if __name__ == "__main__":
-    pipeline(verb=True)
