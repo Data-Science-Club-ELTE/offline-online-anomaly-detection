@@ -89,7 +89,7 @@ def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     if df.isna().sum().sum() == 0:
         return df
 
-    cleaned = df.copy()
+    cleaned = df
     
     num_cols = cleaned.select_dtypes("number").columns
     cleaned[num_cols] = cleaned[num_cols].fillna(cleaned[num_cols].median())
@@ -112,7 +112,7 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
 
 def preprocess_data(data: pd.DataFrame) -> np.ndarray:
     """Scales numeric features and converts data to a numpy array."""
-    df = data.copy()
+    df = data
     scaler = StandardScaler()
     df[['Time', 'Amount']] = scaler.fit_transform(df[['Time', 'Amount']])
     return df.to_numpy()
