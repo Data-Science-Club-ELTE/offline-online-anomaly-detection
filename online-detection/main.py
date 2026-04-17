@@ -172,6 +172,5 @@ def pipeline(
         clear_report()
 
     _log("Finished processing the dataset.", verb, msg_callback)
-    _log(f"Classification Report:\n{class_report}", verb, msg_callback)
     _log("Finished evaluation.", verb, msg_callback)
-    _log("Pipeline execution completed.", verb, msg_callback)
+    _log("Pipeline execution completed.", verb, msg_callback, end=True)
