@@ -71,6 +71,20 @@ The resulting performance is:
 | :---------- | ----------: | ------------: | ----------: | -------: |
 | Top-K Score |       0.010 |          1418 |       0.078 |    0.521 |
 
+
+As for the online (stream) pipeline:
+
+- Min-Max Scaling
+- Modeling via Half-Space Trees
+- Tuned Threshold for cold start, then fallback to `q=0.99` quantile filter.
+- Performance Evaluation via threshold-based metrics
+
+The resulting performance is:
+
+|       | Precision | Recall | F1 Score |
+| :---- | --------: | -----: | -------: |
+| Score |     0.086 |  0.363 |    0.140 |
+
 ## How to run the Project
 
 > [!WARNING]
